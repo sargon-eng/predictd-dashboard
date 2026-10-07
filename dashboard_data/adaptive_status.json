@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-10-05 01:31:38",
+  "overall_status": "excellent",
+  "primary_window": "last_10",
+  "trend": "insufficient_data",
+  "windows": {
+    "last_10": {
+      "matches": 10,
+      "correct": 6,
+      "accuracy": 0.6
+    },
+    "last_30": null,
+    "last_100": null,
+    "all_time": {
+      "matches": 20,
+      "correct": 10,
+      "accuracy": 0.5
+    }
+  },
+  "leagues": {
+    "Premier League": {
+      "matches": 20,
+      "correct": 10,
+      "accuracy": 0.5
+    }
+  },
+  "calibration_issues": [],
+  "alerts": [
+    {
+      "level": "EXCELLENT",
+      "message": "Recent accuracy above 55% \u2014 model performing strongly",
+      "action": "No action needed"
+    }
+  ]
+}
