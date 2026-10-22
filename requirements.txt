@@ -5,3 +5,4 @@ plotly
 requests
 scikit-learn
 scipy
+supabase
