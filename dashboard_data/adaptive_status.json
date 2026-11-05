@@ -1,27 +1,55 @@
 {
-  "timestamp": "2026-10-05 01:31:38",
+  "timestamp": "2026-11-02 01:31:46",
   "overall_status": "excellent",
   "primary_window": "last_10",
-  "trend": "insufficient_data",
+  "trend": "worsening",
   "windows": {
     "last_10": {
       "matches": 10,
       "correct": 6,
       "accuracy": 0.6
     },
-    "last_30": null,
-    "last_100": null,
+    "last_30": {
+      "matches": 30,
+      "correct": 16,
+      "accuracy": 0.5333333333333333
+    },
+    "last_100": {
+      "matches": 100,
+      "correct": 59,
+      "accuracy": 0.59
+    },
     "all_time": {
-      "matches": 20,
-      "correct": 10,
-      "accuracy": 0.5
+      "matches": 163,
+      "correct": 95,
+      "accuracy": 0.5828220858895705
     }
   },
   "leagues": {
     "Premier League": {
-      "matches": 20,
-      "correct": 10,
+      "matches": 50,
+      "correct": 25,
       "accuracy": 0.5
+    },
+    "Bundesliga": {
+      "matches": 27,
+      "correct": 16,
+      "accuracy": 0.5926
+    },
+    "La Liga": {
+      "matches": 30,
+      "correct": 17,
+      "accuracy": 0.5667
+    },
+    "Ligue 1": {
+      "matches": 26,
+      "correct": 16,
+      "accuracy": 0.6154
+    },
+    "Serie A": {
+      "matches": 30,
+      "correct": 21,
+      "accuracy": 0.7
     }
   },
   "calibration_issues": [],
@@ -30,6 +58,11 @@
       "level": "EXCELLENT",
       "message": "Recent accuracy above 55% \u2014 model performing strongly",
       "action": "No action needed"
+    },
+    {
+      "level": "WARNING",
+      "message": "Accuracy is trending downward over the last 30 matches",
+      "action": "Look for systematic issues (league, time of day)"
     }
   ]
 }

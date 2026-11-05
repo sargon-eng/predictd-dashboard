@@ -1,6 +1,5 @@
 """
-Predictd Dashboard - Multi-League with 1X2 + Double Chance + Adaptive Alerts
-Reads from dashboard_data/ when available (for cloud), falls back to live folders.
+Predictd Dashboard - Multi-League with 1X2 + DC + Bet Slips + Accuracy Tracking
 """
 
 import streamlit as st
@@ -17,14 +16,10 @@ st.title("⚽ Predictd - Sports Prediction Lab")
 
 
 # ==============================================================================
-# PATH RESOLUTION (cloud vs local)
+# PATH RESOLUTION
 # ==============================================================================
 
 def data_path(filename, live_subfolder=None):
-    """
-    Prefer dashboard_data/<filename> if it exists (cloud deployment).
-    Otherwise fall back to live_subfolder/<filename> (local run).
-    """
     snapshot = os.path.join("dashboard_data", filename)
     if os.path.exists(snapshot):
         return snapshot
@@ -34,21 +29,31 @@ def data_path(filename, live_subfolder=None):
 
 
 def find_latest_live_file():
-    """
-    Return the latest live_*.csv from dashboard_data/ (if present),
-    otherwise from predictions/.
-    """
-    snapshot = sorted(glob.glob("dashboard_data/live_*.csv"))
-    if snapshot:
-        return snapshot[-1]
-    live = sorted(glob.glob("predictions/live_*.csv"))
-    if live:
-        return live[-1]
-    return None
+    s = sorted(glob.glob("dashboard_data/live_*.csv"))
+    if s:
+        return s[-1]
+    l = sorted(glob.glob("predictions/live_*.csv"))
+    return l[-1] if l else None
+
+
+def find_latest_slip_file():
+    s = sorted(glob.glob("dashboard_data/bet_slips_*.csv"))
+    if s:
+        return s[-1]
+    l = sorted(glob.glob("predictions/bet_slips_*.csv"))
+    return l[-1] if l else None
+
+
+def find_slip_accuracy_file():
+    s = os.path.join("dashboard_data", "bet_slip_accuracy.csv")
+    if os.path.exists(s):
+        return s
+    l = os.path.join("logs", "bet_slip_accuracy.csv")
+    return l if os.path.exists(l) else None
 
 
 # ==============================================================================
-# DATA LOADERS
+# LOADERS
 # ==============================================================================
 
 @st.cache_data(ttl=60)
@@ -56,26 +61,20 @@ def load_latest_predictions():
     latest = find_latest_live_file()
     if latest is None:
         return pd.DataFrame()
-
     df = pd.read_csv(latest)
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['source_file'] = os.path.basename(latest)
 
-    # Normalize prob_* → pred_*
-    rename_map = {}
     for std, alt in [('pred_home', 'prob_home'),
                      ('pred_draw', 'prob_draw'),
                      ('pred_away', 'prob_away')]:
         if std not in df.columns and alt in df.columns:
-            rename_map[alt] = std
-    if rename_map:
-        df = df.rename(columns=rename_map)
+            df = df.rename(columns={alt: std})
 
     for col in ['pred_home', 'pred_draw', 'pred_away']:
         if col not in df.columns:
             df[col] = 0.333
 
-    # Ensure DC columns exist
     if 'dc_prediction' not in df.columns:
         ph = df['pred_home'].fillna(0.333)
         pd_ = df['pred_draw'].fillna(0.333)
@@ -83,14 +82,35 @@ def load_latest_predictions():
         df['prob_1x'] = ph + pd_
         df['prob_x2'] = pd_ + pa
         df['prob_12'] = ph + pa
-        dc_probs = df[['prob_1x', 'prob_x2', 'prob_12']].values
         import numpy as np
+        dc_probs = df[['prob_1x', 'prob_x2', 'prob_12']].values
         df['dc_prediction'] = np.array(['1X', 'X2', '12'])[np.argmax(dc_probs, axis=1)]
 
     if 'League' not in df.columns:
         df['League'] = 'Unknown'
 
     return df
+
+
+@st.cache_data(ttl=60)
+def load_bet_slips():
+    latest = find_latest_slip_file()
+    if latest is None:
+        return pd.DataFrame()
+    df = pd.read_csv(latest)
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    return df
+
+
+@st.cache_data(ttl=60)
+def load_slip_accuracy():
+    path = find_slip_accuracy_file()
+    if path is None:
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path)
+    except Exception:
+        return pd.DataFrame()
 
 
 @st.cache_data(ttl=60)
@@ -112,14 +132,6 @@ def load_accuracy_log():
         df = pd.read_csv(p)
         if 'Date' in df.columns:
             df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-        for std, alt in [('pred_home', 'prob_home'),
-                         ('pred_draw', 'prob_draw'),
-                         ('pred_away', 'prob_away')]:
-            if std not in df.columns and alt in df.columns:
-                df[std] = df[alt]
-        for col in ['pred_home', 'pred_draw', 'pred_away']:
-            if col not in df.columns:
-                df[col] = 0.333
         return df
     except Exception:
         return pd.DataFrame()
@@ -142,7 +154,8 @@ def load_adaptive_status():
 st.sidebar.header("📊 Navigation")
 option = st.sidebar.radio(
     "Choose a view:",
-    ["🎯 Upcoming Predictions", "📈 Accuracy Tracker", "🧠 Model Insights", "📖 About"]
+    ["🎯 Upcoming Predictions", "🎫 Bet Slips", "📈 Accuracy Tracker",
+     "🧠 Model Insights", "📖 About"]
 )
 
 st.sidebar.markdown("---")
@@ -151,23 +164,26 @@ st.sidebar.markdown("### System Status")
 preds = load_latest_predictions()
 if not preds.empty:
     st.sidebar.success(f"✓ {len(preds)} predictions loaded")
-    st.sidebar.caption(f"Latest: {preds['source_file'].iloc[0]}")
     if 'League' in preds.columns and preds['League'].nunique() > 1:
         st.sidebar.caption(f"{preds['League'].nunique()} leagues")
-else:
-    st.sidebar.warning("No predictions yet")
+
+slips = load_bet_slips()
+if not slips.empty:
+    st.sidebar.success(f"✓ {slips['slip_id'].nunique()} bet slips")
 
 acc = load_accuracy_summary()
 if not acc.empty:
-    st.sidebar.success(f"✓ {len(acc)} accuracy runs logged")
     latest_acc = acc.iloc[-1].get('accuracy', None)
     if latest_acc is not None:
         st.sidebar.metric("1X2 Accuracy", f"{latest_acc*100:.1f}%")
     latest_dc_acc = acc.iloc[-1].get('dc_accuracy', None)
     if latest_dc_acc is not None and pd.notna(latest_dc_acc):
         st.sidebar.metric("DC Accuracy", f"{latest_dc_acc*100:.1f}%")
-else:
-    st.sidebar.info("No accuracy data yet")
+
+slip_acc = load_slip_accuracy()
+if not slip_acc.empty:
+    wins = (slip_acc['outcome'] == 'WIN').sum()
+    st.sidebar.metric("Slip Win Rate", f"{wins}/{len(slip_acc)} = {wins/len(slip_acc)*100:.1f}%")
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🚨 Alerts")
@@ -176,33 +192,24 @@ adaptive = load_adaptive_status()
 if adaptive:
     overall = adaptive.get('overall_status', 'no_data')
     trend = adaptive.get('trend', 'unknown')
-    status_emoji = {
-        'excellent': '🟢', 'good': '🟢', 'warning': '🟡',
-        'critical': '🔴', 'no_data': '⚪',
-    }.get(overall, '⚪')
-    trend_emoji = {
-        'improving': '📈', 'worsening': '📉',
-        'stable': '➡️', 'insufficient_data': '⏳',
-    }.get(trend, '❓')
+    status_emoji = {'excellent': '🟢', 'good': '🟢', 'warning': '🟡',
+                    'critical': '🔴', 'no_data': '⚪'}.get(overall, '⚪')
+    trend_emoji = {'improving': '📈', 'worsening': '📉',
+                   'stable': '➡️', 'insufficient_data': '⏳'}.get(trend, '❓')
     st.sidebar.markdown(f"{status_emoji} Status: **{overall.upper()}**")
     st.sidebar.markdown(f"{trend_emoji} Trend: **{trend}**")
     alerts = adaptive.get('alerts', [])
-    if alerts:
-        for alert in alerts:
-            level = alert.get('level', 'INFO')
-            msg = alert.get('message', '')
-            if level == 'CRITICAL':
-                st.sidebar.error(msg)
-            elif level == 'WARNING':
-                st.sidebar.warning(msg)
-            elif level == 'EXCELLENT':
-                st.sidebar.success(msg)
-            else:
-                st.sidebar.info(msg)
-    else:
-        st.sidebar.info("No alerts")
-else:
-    st.sidebar.info("Monitor not run yet")
+    for alert in alerts:
+        level = alert.get('level', 'INFO')
+        msg = alert.get('message', '')
+        if level == 'CRITICAL':
+            st.sidebar.error(msg)
+        elif level == 'WARNING':
+            st.sidebar.warning(msg)
+        elif level == 'EXCELLENT':
+            st.sidebar.success(msg)
+        else:
+            st.sidebar.info(msg)
 
 
 # ==============================================================================
@@ -217,32 +224,26 @@ if option == "🎯 Upcoming Predictions":
     else:
         today = pd.Timestamp.now().normalize()
         upcoming = preds[preds['Date'] >= today].copy()
-
         st.metric("Total Upcoming Matches", len(upcoming))
 
         if upcoming.empty:
             st.info("No upcoming matches.")
         else:
             col1, col2, col3 = st.columns(3)
-            col1.metric("1X2: Home Picks", (upcoming['prediction'] == 'H').sum())
-            col2.metric("1X2: Draw Picks", (upcoming['prediction'] == 'D').sum())
-            col3.metric("1X2: Away Picks", (upcoming['prediction'] == 'A').sum())
+            col1.metric("Home Picks", (upcoming['prediction'] == 'H').sum())
+            col2.metric("Draw Picks", (upcoming['prediction'] == 'D').sum())
+            col3.metric("Away Picks", (upcoming['prediction'] == 'A').sum())
 
             st.markdown("---")
             st.markdown("### 🔍 Filters")
-
             fcol1, fcol2, fcol3 = st.columns(3)
             with fcol1:
-                league_filter = st.multiselect(
-                    "Leagues",
+                league_filter = st.multiselect("Leagues",
                     options=sorted(upcoming['League'].unique()),
-                    default=sorted(upcoming['League'].unique())
-                )
+                    default=sorted(upcoming['League'].unique()))
             with fcol2:
-                market_view = st.selectbox(
-                    "Market",
-                    options=['Both (1X2 + DC)', '1X2 Only', 'DC Only']
-                )
+                market_view = st.selectbox("Market",
+                    options=['Both (1X2 + DC)', '1X2 Only', 'DC Only'])
             with fcol3:
                 min_confidence = st.slider("Min confidence", 0.0, 1.0, 0.0, 0.05)
 
@@ -268,18 +269,15 @@ if option == "🎯 Upcoming Predictions":
                             c3.markdown(
                                 f"1X2: **`{row['prediction']}`**<br>"
                                 f"DC: **`{row.get('dc_prediction', '?')}`**",
-                                unsafe_allow_html=True
-                            )
+                                unsafe_allow_html=True)
                         elif market_view == '1X2 Only':
                             c3.markdown(f"### `{row['prediction']}`")
                         else:
                             c3.markdown(f"### `{row.get('dc_prediction', '?')}`")
 
                         if market_view == 'Both (1X2 + DC)':
-                            probs = [
-                                row['pred_home'], row['pred_draw'], row['pred_away'],
-                                row.get('prob_1x', 0), row.get('prob_x2', 0), row.get('prob_12', 0)
-                            ]
+                            probs = [row['pred_home'], row['pred_draw'], row['pred_away'],
+                                    row.get('prob_1x', 0), row.get('prob_x2', 0), row.get('prob_12', 0)]
                             labels = ['H', 'D', 'A', '1X', 'X2', '12']
                             colors = ['#2E86C1', '#F1C40F', '#E74C3C', '#7FB3D5', '#F7DC6F', '#EC7063']
                         elif market_view == '1X2 Only':
@@ -287,33 +285,214 @@ if option == "🎯 Upcoming Predictions":
                             labels = ['Home', 'Draw', 'Away']
                             colors = ['#2E86C1', '#F1C40F', '#E74C3C']
                         else:
-                            probs = [
-                                row.get('prob_1x', 0),
-                                row.get('prob_x2', 0),
-                                row.get('prob_12', 0)
-                            ]
+                            probs = [row.get('prob_1x', 0), row.get('prob_x2', 0), row.get('prob_12', 0)]
                             labels = ['1X', 'X2', '12']
                             colors = ['#7FB3D5', '#F7DC6F', '#EC7063']
 
                         fig = go.Figure()
-                        fig.add_trace(go.Bar(
-                            x=labels, y=probs, marker_color=colors,
-                            text=[f"{p*100:.0f}%" for p in probs],
-                            textposition='outside'
-                        ))
-                        fig.update_layout(
-                            height=180,
-                            margin=dict(l=0, r=0, t=0, b=0),
-                            yaxis_range=[0, 1],
-                            showlegend=False,
-                            yaxis=dict(showticklabels=False)
-                        )
-                        c4.plotly_chart(fig, use_container_width=True, key=f"chart_{row.name}")
+                        fig.add_trace(go.Bar(x=labels, y=probs, marker_color=colors,
+                                             text=[f"{p*100:.0f}%" for p in probs],
+                                             textposition='outside'))
+                        fig.update_layout(height=180, margin=dict(l=0, r=0, t=0, b=0),
+                                          yaxis_range=[0, 1], showlegend=False,
+                                          yaxis=dict(showticklabels=False))
+                        c4.plotly_chart(fig, width='stretch', key=f"chart_{row.name}")
                     st.markdown("---")
 
 
 # ==============================================================================
-# VIEW 2: ACCURACY TRACKER
+# VIEW 2: BET SLIPS
+# ==============================================================================
+
+elif option == "🎫 Bet Slips":
+    st.subheader("🎫 Learning-Optimized Bet Slips")
+
+    if slips.empty:
+        st.warning("No bet slips available. Run `python src\\bet_slip_builder.py` first.")
+    else:
+        # Filter controls
+        st.markdown("### 🔍 Filters")
+        fcol1, fcol2 = st.columns(2)
+        with fcol1:
+            strategy_filter = st.multiselect(
+                "Strategy",
+                options=sorted(slips['strategy'].unique()),
+                default=sorted(slips['strategy'].unique())
+            )
+        with fcol2:
+            market_filter = st.multiselect(
+                "Market",
+                options=sorted(slips['market'].unique()),
+                default=sorted(slips['market'].unique())
+            )
+
+        filtered_slips = slips[
+            slips['strategy'].isin(strategy_filter) &
+            slips['market'].isin(market_filter)
+        ]
+
+        # Summary metrics
+        n_slips = filtered_slips['slip_id'].nunique() if not filtered_slips.empty else 0
+        st.metric("Showing Slips", n_slips)
+
+        st.markdown("---")
+
+        if filtered_slips.empty:
+            st.info("No slips match your filters.")
+        else:
+            # Group by strategy + market
+            for strat in sorted(filtered_slips['strategy'].unique()):
+                strat_data = filtered_slips[filtered_slips['strategy'] == strat]
+                strat_market = strat_data['market'].iloc[0]
+
+                # Strategy header with description
+                strategy_desc = {
+                    'top_mixed': '🏆 Best overall picks across H/D/A',
+                    'home_best': '🏠 Best home-win picks only',
+                    'away_best': '✈️ Best away-win picks only',
+                    'dc_best': '🛡️ Best Double Chance picks (safest)',
+                }.get(strat, '')
+
+                st.markdown(f"## {strategy_desc} — `{strat}`")
+
+                slip_ids = sorted(strat_data['slip_id'].unique())
+
+                for slip_id in slip_ids:
+                    slip_data = strat_data[strat_data['slip_id'] == slip_id]
+                    if slip_data.empty:
+                        continue
+
+                    size = int(slip_data['size'].iloc[0])
+                    combined = float(slip_data['combined_prob'].iloc[0])
+                    leagues = sorted(slip_data['League'].unique())
+
+                    if combined >= 0.5:
+                        status = "🟢"
+                    elif combined >= 0.25:
+                        status = "🟡"
+                    else:
+                        status = "🔴"
+
+                    with st.expander(
+                        f"{status} **Slip #{slip_id}** — {size}-fold | "
+                        f"Combined: {combined*100:.1f}% | "
+                        f"Odds: {1/combined:.2f}x | "
+                        f"Leagues: {', '.join(leagues)}",
+                        expanded=False
+                    ):
+                        for _, row in slip_data.sort_values('pick_num').iterrows():
+                            cols = st.columns([0.4, 1.2, 1.8, 0.7, 0.7, 0.7])
+                            cols[0].markdown(f"**{int(row['pick_num'])}**")
+                            cols[1].markdown(f"{row['Date'].strftime('%b %d')} • {row['League']}")
+                            cols[2].markdown(f"**{row['HomeTeam']}** vs {row['AwayTeam']}")
+                            cols[3].markdown(f"**`{row['prediction']}`**")
+                            cols[4].markdown(f"{row['probability']*100:.1f}%")
+                            cols[5].markdown(f"*{row['score']:.2f}*")
+
+                        st.markdown(f"**Combined probability:** {combined*100:.2f}% "
+                                    f"| **Implied odds:** {1/combined:.2f}x")
+
+                st.markdown("---")
+
+        # ============================================================
+        # HISTORICAL BET SLIP ACCURACY
+        # ============================================================
+        st.markdown("## 📊 Historical Bet Slip Accuracy")
+
+        if slip_acc.empty:
+            st.info("No bet slips have been fully played yet. "
+                    "Once all picks in a slip resolve, accuracy will appear here.")
+        else:
+            wins = (slip_acc['outcome'] == 'WIN').sum()
+            total_slips = len(slip_acc)
+            win_rate = wins / total_slips
+
+            # Top metrics
+            mc1, mc2, mc3, mc4 = st.columns(4)
+            mc1.metric("Slips Evaluated", total_slips)
+            mc2.metric("Wins", int(wins))
+            mc3.metric("Win Rate", f"{win_rate*100:.1f}%")
+            avg_pred = slip_acc['combined_prob'].mean()
+            mc4.metric("Avg Predicted", f"{avg_pred*100:.1f}%")
+
+            # Calibration
+            gap = (avg_pred - win_rate) * 100
+            if gap > 5:
+                st.warning(f"⚠️ Model overconfident by {gap:.1f} pp "
+                           f"(predicted {avg_pred*100:.1f}%, actually won {win_rate*100:.1f}%)")
+            elif gap < -5:
+                st.success(f"✅ Model under-confident by {abs(gap):.1f} pp "
+                           f"(predicted {avg_pred*100:.1f}%, actually won {win_rate*100:.1f}%)")
+            else:
+                st.success(f"✅ Well-calibrated (gap: {gap:.1f} pp)")
+
+            # Charts
+            chart_col1, chart_col2 = st.columns(2)
+
+            with chart_col1:
+                st.markdown("### Win Rate by Strategy")
+                strat_stats = []
+                for strat in ['top_mixed', 'home_best', 'away_best', 'dc_best']:
+                    sub = slip_acc[slip_acc['strategy'] == strat]
+                    if len(sub) == 0:
+                        continue
+                    w = (sub['outcome'] == 'WIN').sum()
+                    strat_stats.append({
+                        'strategy': strat,
+                        'matches': len(sub),
+                        'wins': int(w),
+                        'win_rate': w / len(sub),
+                    })
+                if strat_stats:
+                    strat_df = pd.DataFrame(strat_stats)
+                    fig = px.bar(strat_df, x='strategy', y='win_rate',
+                                text=strat_df['win_rate'].apply(lambda x: f"{x*100:.0f}%"),
+                                color='strategy',
+                                color_discrete_sequence=px.colors.qualitative.Set2)
+                    fig.update_layout(yaxis_tickformat='.0%', showlegend=False,
+                                     yaxis_title="Win Rate")
+                    fig.update_traces(textposition='outside')
+                    st.plotly_chart(fig, width='stretch')
+
+            with chart_col2:
+                st.markdown("### Win Rate by Slip Size")
+                size_stats = []
+                for sz in sorted(slip_acc['size'].unique()):
+                    sub = slip_acc[slip_acc['size'] == sz]
+                    if len(sub) == 0:
+                        continue
+                    w = (sub['outcome'] == 'WIN').sum()
+                    size_stats.append({
+                        'size': f"{int(sz)}-fold",
+                        'matches': len(sub),
+                        'wins': int(w),
+                        'win_rate': w / len(sub),
+                    })
+                if size_stats:
+                    size_df = pd.DataFrame(size_stats)
+                    fig = px.bar(size_df, x='size', y='win_rate',
+                                text=size_df['win_rate'].apply(lambda x: f"{x*100:.0f}%"),
+                                color='size',
+                                color_discrete_sequence=px.colors.qualitative.Pastel)
+                    fig.update_layout(yaxis_tickformat='.0%', showlegend=False,
+                                     yaxis_title="Win Rate")
+                    fig.update_traces(textposition='outside')
+                    st.plotly_chart(fig, width='stretch')
+
+            # Detail table
+            st.markdown("### All Evaluated Slips")
+            display = slip_acc.sort_values('slip_date', ascending=False).copy()
+            display['outcome_icon'] = display['outcome'].map({'WIN': '✅', 'LOSS': '❌'})
+            display['combined_prob_pct'] = (display['combined_prob'] * 100).round(1).astype(str) + '%'
+            st.dataframe(
+                display[['slip_date', 'strategy', 'market', 'size',
+                         'outcome_icon', 'combined_prob_pct', 'outcome']],
+                width='stretch'
+            )
+
+
+# ==============================================================================
+# VIEW 3: ACCURACY TRACKER
 # ==============================================================================
 
 elif option == "📈 Accuracy Tracker":
@@ -324,10 +503,9 @@ elif option == "📈 Accuracy Tracker":
     adaptive = load_adaptive_status()
 
     if summary.empty:
-        st.info("No accuracy data yet. Predictions are logged; results pending.")
+        st.info("No accuracy data yet.")
     else:
         latest = summary.iloc[-1]
-
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("1X2 Accuracy", f"{latest['accuracy']*100:.2f}%")
         col2.metric("1X2 Correct", f"{int(latest['correct'])}/{int(latest['total_matches'])}")
@@ -340,27 +518,20 @@ elif option == "📈 Accuracy Tracker":
 
         if len(summary) > 1 and 'dc_accuracy' in summary.columns:
             fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=summary['timestamp'], y=summary['accuracy'],
-                mode='lines+markers', name='1X2'
-            ))
+            fig.add_trace(go.Scatter(x=summary['timestamp'], y=summary['accuracy'],
+                                     mode='lines+markers', name='1X2'))
             if 'dc_accuracy' in summary.columns:
-                fig.add_trace(go.Scatter(
-                    x=summary['timestamp'], y=summary['dc_accuracy'],
-                    mode='lines+markers', name='Double Chance'
-                ))
+                fig.add_trace(go.Scatter(x=summary['timestamp'], y=summary['dc_accuracy'],
+                                         mode='lines+markers', name='Double Chance'))
             fig.update_layout(title="Accuracy Over Time", yaxis_tickformat='.1%')
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 
         if adaptive:
             st.markdown("---")
             st.markdown("### 🚨 Adaptive Monitor")
-
-            status_col1, status_col2 = st.columns(2)
-            with status_col1:
-                st.metric("Overall Status", adaptive.get('overall_status', 'no_data').upper())
-            with status_col2:
-                st.metric("Trend", adaptive.get('trend', 'unknown'))
+            c1, c2 = st.columns(2)
+            c1.metric("Overall Status", adaptive.get('overall_status', 'no_data').upper())
+            c2.metric("Trend", adaptive.get('trend', 'unknown'))
 
             windows = adaptive.get('windows', {})
             if windows:
@@ -368,12 +539,6 @@ elif option == "📈 Accuracy Tracker":
                 for wname, w in windows.items():
                     if w:
                         st.write(f"**{wname}**: {w['accuracy']*100:.1f}% ({w['correct']}/{w['matches']})")
-
-            leagues_stats = adaptive.get('leagues', {})
-            if leagues_stats:
-                st.markdown("#### Per-League")
-                for lg, s in leagues_stats.items():
-                    st.write(f"**{lg}**: {s['accuracy']*100:.1f}% ({s['correct']}/{s['matches']})")
 
             alerts = adaptive.get('alerts', [])
             if alerts:
@@ -395,15 +560,7 @@ elif option == "📈 Accuracy Tracker":
             cm = pd.crosstab(log['prediction'], log['FTR'])
             fig_cm = px.imshow(cm, labels=dict(x="Actual", y="Predicted", color="Count"),
                                 color_continuous_scale='Blues', text_auto=True)
-            st.plotly_chart(fig_cm, use_container_width=True)
-
-            if 'dc_correct' in log.columns and 'dc_prediction' in log.columns:
-                st.markdown("### DC Accuracy by Prediction Type")
-                for pred in ['1X', 'X2', '12']:
-                    sub = log[log['dc_prediction'] == pred]
-                    if not sub.empty:
-                        st.metric(f"DC {pred}", f"{sub['dc_correct'].mean()*100:.1f}%",
-                                  delta=f"{len(sub)} matches")
+            st.plotly_chart(fig_cm, width='stretch')
 
         if not log.empty:
             st.markdown("### Recent Match Results")
@@ -411,11 +568,11 @@ elif option == "📈 Accuracy Tracker":
                     'prediction', 'dc_prediction', 'FTR', 'correct', 'dc_correct']
             available = [c for c in cols if c in log.columns]
             st.dataframe(log[available].sort_values('Date', ascending=False).head(50),
-                         use_container_width=True)
+                         width='stretch')
 
 
 # ==============================================================================
-# VIEW 3: MODEL INSIGHTS
+# VIEW 4: MODEL INSIGHTS
 # ==============================================================================
 
 elif option == "🧠 Model Insights":
@@ -431,7 +588,7 @@ elif option == "🧠 Model Insights":
             st.markdown("### Confidence Distribution")
             fig = px.histogram(preds, x='max_conf', nbins=20)
             fig.update_layout(xaxis_tickformat='.0%', showlegend=False)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 
         with col2:
             st.markdown("### 1X2 Distribution")
@@ -439,7 +596,7 @@ elif option == "🧠 Model Insights":
             dist.columns = ['Outcome', 'Count']
             fig = px.pie(dist, names='Outcome', values='Count', color='Outcome',
                          color_discrete_map={'H': '#2E86C1', 'D': '#F1C40F', 'A': '#E74C3C'})
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 
         if 'dc_prediction' in preds.columns:
             st.markdown("### Double Chance Distribution")
@@ -447,18 +604,18 @@ elif option == "🧠 Model Insights":
             dc_dist.columns = ['DC Outcome', 'Count']
             fig = px.bar(dc_dist, x='DC Outcome', y='Count', color='DC Outcome',
                          color_discrete_map={'1X': '#7FB3D5', 'X2': '#F7DC6F', '12': '#EC7063'})
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 
         if 'League' in preds.columns and preds['League'].nunique() > 1:
             st.markdown("### Predictions by League")
             fig = px.histogram(preds, x='League', color='prediction',
                                color_discrete_map={'H': '#2E86C1', 'D': '#F1C40F', 'A': '#E74C3C'},
                                barmode='stack')
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 
 
 # ==============================================================================
-# VIEW 4: ABOUT
+# VIEW 5: ABOUT
 # ==============================================================================
 
 else:
@@ -469,6 +626,13 @@ else:
     st.markdown("### Markets Covered")
     st.markdown("- **1X2** — Home / Draw / Away")
     st.markdown("- **Double Chance** — 1X (Home or Draw), X2 (Draw or Away), 12 (Home or Away)")
+    st.markdown("- **Bet Slips** — Learning-optimized combinations (4 strategies × 5 sizes = 20 slips)")
+
+    st.markdown("### Bet Slip Strategies")
+    st.markdown("- **top_mixed** — Best overall picks across H/D/A")
+    st.markdown("- **home_best** — Best home-win picks only")
+    st.markdown("- **away_best** — Best away-win picks only")
+    st.markdown("- **dc_best** — Best Double Chance picks (highest combined probability)")
 
     st.markdown("### Competitions")
     st.markdown("- Premier League, La Liga, Bundesliga, Serie A, Ligue 1")
@@ -476,12 +640,13 @@ else:
 
     st.markdown("### Model: V20")
     st.markdown("- **Odds source:** Pinnacle (preferred), Betfair Exchange (fallback)")
-    st.markdown("- **Data:** 20,013 matches across 5 domestic leagues")
-    st.markdown("- **Live updates:** Daily at 13:10 via Windows Task Scheduler")
+    st.markdown("- **Learning:** Weights update from historical accuracy per league/type/confidence")
 
-    st.markdown("### System Components")
-    st.markdown("1. **Data Pipeline** — 12 seasons × 5 leagues from Football-Data.co.uk")
-    st.markdown("2. **Live Predictions** — Pinnacle odds, 1X2 + Double Chance")
-    st.markdown("3. **Accuracy Tracking** — Weekly comparison vs actuals")
-    st.markdown("4. **Adaptive Monitor** — Alerts on performance issues")
-    st.markdown("5. **Dashboard** — This view")
+    st.markdown("### Commands")
+    st.code(
+        "python src/predict_live.py        # Generate predictions\n"
+        "python src/bet_slip_builder.py    # Build 20 bet slips\n"
+        "python src/track_accuracy.py      # Track accuracy + slips\n"
+        "streamlit run dashboard.py        # Launch dashboard",
+        language="bash"
+    )
