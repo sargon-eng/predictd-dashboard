@@ -1,0 +1,101 @@
+slip_id,strategy,market,size,combined_prob,pick_num,Date,League,HomeTeam,AwayTeam,prediction,probability,score
+1,top_mixed,1x2,3,0.4772,1,2026-11-07,Serie A,Roma,Sassuolo,H,0.7485,1.3176
+1,top_mixed,1x2,3,0.4772,2,2026-11-07,Ligue 1,Paris SG,Troyes,H,0.8649,1.2251
+1,top_mixed,1x2,3,0.4772,3,2026-11-07,Bundesliga,Dortmund,Elversberg,H,0.7372,0.976
+2,top_mixed,1x2,4,0.314,1,2026-11-07,Serie A,Roma,Sassuolo,H,0.7485,1.3176
+2,top_mixed,1x2,4,0.314,2,2026-11-07,Ligue 1,Paris SG,Troyes,H,0.8649,1.2251
+2,top_mixed,1x2,4,0.314,3,2026-11-07,Bundesliga,Dortmund,Elversberg,H,0.7372,0.976
+2,top_mixed,1x2,4,0.314,4,2026-11-07,Bundesliga,RB Leipzig,Augsburg,H,0.658,0.8711
+3,top_mixed,1x2,5,0.2117,1,2026-11-07,Serie A,Roma,Sassuolo,H,0.7485,1.3176
+3,top_mixed,1x2,5,0.2117,2,2026-11-07,Ligue 1,Paris SG,Troyes,H,0.8649,1.2251
+3,top_mixed,1x2,5,0.2117,3,2026-11-07,Bundesliga,Dortmund,Elversberg,H,0.7372,0.976
+3,top_mixed,1x2,5,0.2117,4,2026-11-07,Bundesliga,RB Leipzig,Augsburg,H,0.658,0.8711
+3,top_mixed,1x2,5,0.2117,5,2026-11-08,La Liga,Villarreal,Getafe,H,0.6741,0.8215
+4,top_mixed,1x2,6,0.1362,1,2026-11-07,Serie A,Roma,Sassuolo,H,0.7485,1.3176
+4,top_mixed,1x2,6,0.1362,2,2026-11-07,Ligue 1,Paris SG,Troyes,H,0.8649,1.2251
+4,top_mixed,1x2,6,0.1362,3,2026-11-07,Bundesliga,Dortmund,Elversberg,H,0.7372,0.976
+4,top_mixed,1x2,6,0.1362,4,2026-11-07,Bundesliga,RB Leipzig,Augsburg,H,0.658,0.8711
+4,top_mixed,1x2,6,0.1362,5,2026-11-08,Bundesliga,Freiburg,Union Berlin,H,0.6434,0.8518
+4,top_mixed,1x2,6,0.1362,6,2026-11-08,La Liga,Villarreal,Getafe,H,0.6741,0.8215
+5,top_mixed,1x2,7,0.1131,1,2026-11-07,Serie A,Roma,Sassuolo,H,0.7485,1.3176
+5,top_mixed,1x2,7,0.1131,2,2026-11-07,Ligue 1,Paris SG,Troyes,H,0.8649,1.2251
+5,top_mixed,1x2,7,0.1131,3,2026-11-07,Bundesliga,Dortmund,Elversberg,H,0.7372,0.976
+5,top_mixed,1x2,7,0.1131,4,2026-11-07,Bundesliga,RB Leipzig,Augsburg,H,0.658,0.8711
+5,top_mixed,1x2,7,0.1131,5,2026-11-08,Bundesliga,Freiburg,Union Berlin,H,0.6434,0.8518
+5,top_mixed,1x2,7,0.1131,6,2026-11-08,La Liga,Villarreal,Getafe,H,0.6741,0.8215
+5,top_mixed,1x2,7,0.1131,7,2026-11-07,Premier League,Arsenal,Hull,H,0.8303,0.787
+6,home_best,1x2,3,0.4772,1,2026-11-07,Serie A,Roma,Sassuolo,H,0.7485,1.3176
+6,home_best,1x2,3,0.4772,2,2026-11-07,Ligue 1,Paris SG,Troyes,H,0.8649,1.2251
+6,home_best,1x2,3,0.4772,3,2026-11-07,Bundesliga,Dortmund,Elversberg,H,0.7372,0.976
+7,home_best,1x2,4,0.314,1,2026-11-07,Serie A,Roma,Sassuolo,H,0.7485,1.3176
+7,home_best,1x2,4,0.314,2,2026-11-07,Ligue 1,Paris SG,Troyes,H,0.8649,1.2251
+7,home_best,1x2,4,0.314,3,2026-11-07,Bundesliga,Dortmund,Elversberg,H,0.7372,0.976
+7,home_best,1x2,4,0.314,4,2026-11-07,Bundesliga,RB Leipzig,Augsburg,H,0.658,0.8711
+8,home_best,1x2,5,0.2117,1,2026-11-07,Serie A,Roma,Sassuolo,H,0.7485,1.3176
+8,home_best,1x2,5,0.2117,2,2026-11-07,Ligue 1,Paris SG,Troyes,H,0.8649,1.2251
+8,home_best,1x2,5,0.2117,3,2026-11-07,Bundesliga,Dortmund,Elversberg,H,0.7372,0.976
+8,home_best,1x2,5,0.2117,4,2026-11-07,Bundesliga,RB Leipzig,Augsburg,H,0.658,0.8711
+8,home_best,1x2,5,0.2117,5,2026-11-08,La Liga,Villarreal,Getafe,H,0.6741,0.8215
+9,home_best,1x2,6,0.1362,1,2026-11-07,Serie A,Roma,Sassuolo,H,0.7485,1.3176
+9,home_best,1x2,6,0.1362,2,2026-11-07,Ligue 1,Paris SG,Troyes,H,0.8649,1.2251
+9,home_best,1x2,6,0.1362,3,2026-11-07,Bundesliga,Dortmund,Elversberg,H,0.7372,0.976
+9,home_best,1x2,6,0.1362,4,2026-11-07,Bundesliga,RB Leipzig,Augsburg,H,0.658,0.8711
+9,home_best,1x2,6,0.1362,5,2026-11-08,Bundesliga,Freiburg,Union Berlin,H,0.6434,0.8518
+9,home_best,1x2,6,0.1362,6,2026-11-08,La Liga,Villarreal,Getafe,H,0.6741,0.8215
+10,home_best,1x2,7,0.1131,1,2026-11-07,Serie A,Roma,Sassuolo,H,0.7485,1.3176
+10,home_best,1x2,7,0.1131,2,2026-11-07,Ligue 1,Paris SG,Troyes,H,0.8649,1.2251
+10,home_best,1x2,7,0.1131,3,2026-11-07,Bundesliga,Dortmund,Elversberg,H,0.7372,0.976
+10,home_best,1x2,7,0.1131,4,2026-11-07,Bundesliga,RB Leipzig,Augsburg,H,0.658,0.8711
+10,home_best,1x2,7,0.1131,5,2026-11-08,Bundesliga,Freiburg,Union Berlin,H,0.6434,0.8518
+10,home_best,1x2,7,0.1131,6,2026-11-08,La Liga,Villarreal,Getafe,H,0.6741,0.8215
+10,home_best,1x2,7,0.1131,7,2026-11-07,Premier League,Arsenal,Hull,H,0.8303,0.787
+11,away_best,1x2,3,0.3327,1,2026-11-07,Bundesliga,Mainz,Bayern Munich,A,0.7253,0.7345
+11,away_best,1x2,3,0.3327,2,2026-11-07,La Liga,Valencia,Real Madrid,A,0.7509,0.7
+11,away_best,1x2,3,0.3327,3,2026-11-08,Premier League,Crystal Palace,Liverpool,A,0.6109,0.443
+12,away_best,1x2,4,0.174,1,2026-11-07,Bundesliga,Mainz,Bayern Munich,A,0.7253,0.7345
+12,away_best,1x2,4,0.174,2,2026-11-07,La Liga,Valencia,Real Madrid,A,0.7509,0.7
+12,away_best,1x2,4,0.174,3,2026-11-08,Premier League,Crystal Palace,Liverpool,A,0.6109,0.443
+12,away_best,1x2,4,0.174,4,2026-11-07,Serie A,Parma,Bologna,A,0.523,0.3792
+13,away_best,1x2,5,0.0912,1,2026-11-07,Bundesliga,Mainz,Bayern Munich,A,0.7253,0.7345
+13,away_best,1x2,5,0.0912,2,2026-11-07,La Liga,Valencia,Real Madrid,A,0.7509,0.7
+13,away_best,1x2,5,0.0912,3,2026-11-08,Premier League,Crystal Palace,Liverpool,A,0.6109,0.443
+13,away_best,1x2,5,0.0912,4,2026-11-07,Serie A,Parma,Bologna,A,0.523,0.3792
+13,away_best,1x2,5,0.0912,5,2026-11-08,Serie A,Genoa,Milan,A,0.5241,0.38
+14,away_best,1x2,6,0.0494,1,2026-11-07,Bundesliga,Mainz,Bayern Munich,A,0.7253,0.7345
+14,away_best,1x2,6,0.0494,2,2026-11-07,La Liga,Valencia,Real Madrid,A,0.7509,0.7
+14,away_best,1x2,6,0.0494,3,2026-11-08,Premier League,Crystal Palace,Liverpool,A,0.6109,0.443
+14,away_best,1x2,6,0.0494,4,2026-11-07,Serie A,Parma,Bologna,A,0.523,0.3792
+14,away_best,1x2,6,0.0494,5,2026-11-08,Serie A,Genoa,Milan,A,0.5241,0.38
+14,away_best,1x2,6,0.0494,6,2026-11-07,Ligue 1,Auxerre,Paris FC,A,0.5414,0.3159
+15,away_best,1x2,7,0.0268,1,2026-11-07,Bundesliga,Mainz,Bayern Munich,A,0.7253,0.7345
+15,away_best,1x2,7,0.0268,2,2026-11-07,La Liga,Valencia,Real Madrid,A,0.7509,0.7
+15,away_best,1x2,7,0.0268,3,2026-11-08,Premier League,Crystal Palace,Liverpool,A,0.6109,0.443
+15,away_best,1x2,7,0.0268,4,2026-11-07,Serie A,Parma,Bologna,A,0.523,0.3792
+15,away_best,1x2,7,0.0268,5,2026-11-08,Serie A,Genoa,Milan,A,0.5241,0.38
+15,away_best,1x2,7,0.0268,6,2026-11-07,Ligue 1,Auxerre,Paris FC,A,0.5414,0.3159
+15,away_best,1x2,7,0.0268,7,2026-11-08,Ligue 1,Le Mans,Monaco,A,0.5433,0.317
+16,dc_best,dc,3,0.7559,1,2026-11-07,Serie A,Roma,Sassuolo,1X,0.8987,1.9744
+16,dc_best,dc,3,0.7559,2,2026-11-07,Ligue 1,Paris SG,Troyes,1X,0.9463,1.673
+16,dc_best,dc,3,0.7559,3,2026-11-07,Bundesliga,Dortmund,Elversberg,1X,0.8888,1.4687
+17,dc_best,dc,4,0.6542,1,2026-11-07,Serie A,Roma,Sassuolo,1X,0.8987,1.9744
+17,dc_best,dc,4,0.6542,2,2026-11-07,Ligue 1,Paris SG,Troyes,1X,0.9463,1.673
+17,dc_best,dc,4,0.6542,3,2026-11-07,Bundesliga,Dortmund,Elversberg,1X,0.8888,1.4687
+17,dc_best,dc,4,0.6542,4,2026-11-07,Bundesliga,Mainz,Bayern Munich,X2,0.8655,1.4301
+18,dc_best,dc,5,0.5852,1,2026-11-07,Serie A,Roma,Sassuolo,1X,0.8987,1.9744
+18,dc_best,dc,5,0.5852,2,2026-11-07,Ligue 1,Paris SG,Troyes,1X,0.9463,1.673
+18,dc_best,dc,5,0.5852,3,2026-11-07,Bundesliga,Dortmund,Elversberg,1X,0.8888,1.4687
+18,dc_best,dc,5,0.5852,4,2026-11-07,Bundesliga,Mainz,Bayern Munich,X2,0.8655,1.4301
+18,dc_best,dc,5,0.5852,5,2026-11-07,La Liga,Valencia,Real Madrid,X2,0.8946,1.3607
+19,dc_best,dc,6,0.4964,1,2026-11-07,Serie A,Roma,Sassuolo,1X,0.8987,1.9744
+19,dc_best,dc,6,0.4964,2,2026-11-07,Ligue 1,Paris SG,Troyes,1X,0.9463,1.673
+19,dc_best,dc,6,0.4964,3,2026-11-07,Bundesliga,Dortmund,Elversberg,1X,0.8888,1.4687
+19,dc_best,dc,6,0.4964,4,2026-11-07,Bundesliga,Mainz,Bayern Munich,X2,0.8655,1.4301
+19,dc_best,dc,6,0.4964,5,2026-11-08,Bundesliga,Freiburg,Union Berlin,1X,0.8483,1.4017
+19,dc_best,dc,6,0.4964,6,2026-11-07,La Liga,Valencia,Real Madrid,X2,0.8946,1.3607
+20,dc_best,dc,7,0.4339,1,2026-11-07,Serie A,Roma,Sassuolo,1X,0.8987,1.9744
+20,dc_best,dc,7,0.4339,2,2026-11-07,Ligue 1,Paris SG,Troyes,1X,0.9463,1.673
+20,dc_best,dc,7,0.4339,3,2026-11-07,Bundesliga,Dortmund,Elversberg,1X,0.8888,1.4687
+20,dc_best,dc,7,0.4339,4,2026-11-07,Bundesliga,Mainz,Bayern Munich,X2,0.8655,1.4301
+20,dc_best,dc,7,0.4339,5,2026-11-08,Bundesliga,Freiburg,Union Berlin,1X,0.8483,1.4017
+20,dc_best,dc,7,0.4339,6,2026-11-07,La Liga,Valencia,Real Madrid,X2,0.8946,1.3607
+20,dc_best,dc,7,0.4339,7,2026-11-08,La Liga,Villarreal,Getafe,1X,0.8741,1.3296

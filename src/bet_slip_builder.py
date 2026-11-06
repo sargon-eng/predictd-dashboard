@@ -1,10 +1,11 @@
 """
-Predictd - Bet Slip Builder (v3)
+Predictd - Bet Slip Builder (v4)
 - 4 strategies × 5 sizes = 20 slips
-- All picks within a single 8-day week window (no cross-week waiting)
+- All picks within a single 8-day week window
 - Enforced league diversity per slip
 - Learning weights from historical accuracy
 - Jitter shuffle for variation between strategies
+- Confidence floor: only picks with confidence >= MIN_PICK_CONFIDENCE
 """
 
 import os
@@ -20,6 +21,10 @@ MIN_MATCHES_FOR_LEARNING = 10
 
 # Week window: 8 days from today (covers full weekend + mid-week UCL/UEL)
 WEEK_WINDOW_DAYS = 8
+
+# Confidence floor: skip picks whose confidence is below this threshold
+# Rationale: low-confidence picks (0.4-0.5) historically underperform
+MIN_PICK_CONFIDENCE = 0.50
 
 # Strategy seeds (different seeds = different picks)
 STRATEGY_SEEDS = {
@@ -55,10 +60,6 @@ def load_accuracy_log():
 # ==============================================================================
 
 def get_week_window(df, window_days=WEEK_WINDOW_DAYS):
-    """
-    Return only matches within the next `window_days` from today.
-    This ensures all picks in a slip resolve together.
-    """
     today = pd.Timestamp.now().normalize()
     end = today + pd.Timedelta(days=window_days)
     return df[(df['Date'] >= today) & (df['Date'] < end)].copy()
@@ -179,14 +180,6 @@ def score_picks(df, weights):
 # ==============================================================================
 
 def max_per_league_for_size(size):
-    """
-    Tighter diversity on small slips to force league mixing.
-    size 3: max 1 per league (3 different leagues)
-    size 4: max 2 per league (min 2 leagues)
-    size 5: max 2 per league (min 3 leagues)
-    size 6: max 3 per league (min 2 leagues)
-    size 7: max 3 per league (min 3 leagues)
-    """
     if size <= 3:
         return 1
     elif size <= 5:
@@ -202,6 +195,7 @@ def max_per_league_for_size(size):
 def build_slips_for_strategy(week_df, market, strategy, sizes):
     """
     Build slips using only the week window.
+    Applies MIN_PICK_CONFIDENCE filter to exclude weak picks.
     Jitter shuffle ensures different strategies pick different games.
     """
     if week_df.empty:
@@ -216,8 +210,14 @@ def build_slips_for_strategy(week_df, market, strategy, sizes):
         prob_col = 'dc_confidence'
         pred_col = 'dc_prediction'
 
-    # Strategy filter
     filtered = week_df.copy()
+
+    # ---- CONFIDENCE FLOOR ----
+    # Skip any pick below MIN_PICK_CONFIDENCE threshold.
+    # The 0.4-0.5 bucket historically underperforms, so we exclude it.
+    filtered = filtered[filtered[prob_col] >= MIN_PICK_CONFIDENCE]
+
+    # ---- STRATEGY FILTER ----
     if strategy == 'home_best':
         filtered = filtered[filtered['prediction'] == 'H']
     elif strategy == 'away_best':
@@ -226,7 +226,7 @@ def build_slips_for_strategy(week_df, market, strategy, sizes):
     if filtered.empty:
         return []
 
-    # Jitter shuffle — different seeds per strategy give different picks
+    # ---- JITTER SHUFFLE ----
     seed = STRATEGY_SEEDS.get(strategy, 42)
     rng = np.random.default_rng(seed)
     filtered['jittered_score'] = filtered[score_col] + rng.normal(0, 0.01, len(filtered))
@@ -285,7 +285,7 @@ def build_slips_for_strategy(week_df, market, strategy, sizes):
 
 def main():
     print("=" * 70)
-    print("PREDICTD - BET SLIP BUILDER v3 (WEEK-BASED, 20 SLIPS)")
+    print("PREDICTD - BET SLIP BUILDER v4 (CONFIDENCE-FLOORED)")
     print("=" * 70)
 
     preds = load_latest_predictions()
@@ -294,13 +294,13 @@ def main():
         return
 
     print(f"[OK] Loaded {len(preds)} predictions")
+    print(f"[CFG] MIN_PICK_CONFIDENCE = {MIN_PICK_CONFIDENCE}")
 
     acc_log = load_accuracy_log()
     print(f"[OK] Loaded {len(acc_log)} historical results for learning")
 
     weights = compute_learning_weights(acc_log)
 
-    # Clean weight display
     def clean(w):
         return {k: round(v, 2) for k, v in w.items()}
 
@@ -320,13 +320,25 @@ def main():
 
     print(f"\n[WEEK WINDOW] {today.date()} to {week_end.date()} ({WEEK_WINDOW_DAYS} days)")
     print(f"[OK] {len(week_df)} matches in window:")
+
+    # Show confidence filter impact per league
     for league in sorted(week_df['League'].unique()):
-        count = len(week_df[week_df['League'] == league])
-        print(f"  {league:20}: {count} matches")
+        league_df = week_df[week_df['League'] == league]
+        total = len(league_df)
+        filtered_1x2 = len(league_df[league_df['confidence_1x2'] >= MIN_PICK_CONFIDENCE])
+        filtered_dc = len(league_df[league_df['dc_confidence'] >= MIN_PICK_CONFIDENCE])
+        print(f"  {league:20}: {total} matches "
+              f"(1X2: {filtered_1x2} pass, DC: {filtered_dc} pass)")
 
     if week_df.empty:
         print("[!] No matches in week window.")
         return
+
+    # Total usable picks after filter
+    usable_1x2 = len(week_df[week_df['confidence_1x2'] >= MIN_PICK_CONFIDENCE])
+    usable_dc = len(week_df[week_df['dc_confidence'] >= MIN_PICK_CONFIDENCE])
+    print(f"\n[FILTER] {usable_1x2} 1X2 picks and {usable_dc} DC picks pass "
+          f"confidence >= {MIN_PICK_CONFIDENCE}")
 
     # Generate slips
     sizes = [3, 4, 5, 6, 7]
@@ -337,7 +349,8 @@ def main():
     all_slips += build_slips_for_strategy(week_df, 'dc', 'dc_best', sizes)
 
     if not all_slips:
-        print("[!] No slips could be built.")
+        print("\n[!] No slips could be built after confidence filter.")
+        print(f"     Try lowering MIN_PICK_CONFIDENCE below {MIN_PICK_CONFIDENCE}")
         return
 
     for i, s in enumerate(all_slips, 1):
@@ -389,7 +402,6 @@ def main():
         count = sum(1 for s in all_slips if s['strategy'] == strat)
         print(f"  {strat:12}: {count} slips")
 
-    # League coverage per strategy
     print("\nLeague coverage per strategy (unique leagues used):")
     for strat in ['top_mixed', 'home_best', 'away_best', 'dc_best']:
         strat_slips = [s for s in all_slips if s['strategy'] == strat]
