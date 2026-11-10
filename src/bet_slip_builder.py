@@ -1,11 +1,9 @@
 """
-Predictd - Bet Slip Builder (v4)
-- 4 strategies × 5 sizes = 20 slips
-- All picks within a single 8-day week window
-- Enforced league diversity per slip
-- Learning weights from historical accuracy
-- Jitter shuffle for variation between strategies
-- Confidence floor: only picks with confidence >= MIN_PICK_CONFIDENCE
+Predictd - Bet Slip Builder v6 (DYNAMIC WEEK WINDOW)
+- Adaptive confidence: 0.50 → 0.45 → 0.40 → 0.35 → 0.30
+- Dynamic week window: anchors to earliest upcoming match
+  (fixes international break / no-matches-this-week issue)
+- Always saves a file
 """
 
 import os
@@ -19,14 +17,13 @@ PREDICTIONS_DIR = "predictions"
 LOGS_DIR = "logs"
 MIN_MATCHES_FOR_LEARNING = 10
 
-# Week window: 8 days from today (covers full weekend + mid-week UCL/UEL)
+# Window: 8 days from the earliest upcoming match
 WEEK_WINDOW_DAYS = 8
 
-# Confidence floor: skip picks whose confidence is below this threshold
-# Rationale: low-confidence picks (0.4-0.5) historically underperform
-MIN_PICK_CONFIDENCE = 0.50
+# Adaptive confidence tiers
+CONFIDENCE_TIERS = [0.50, 0.45, 0.40, 0.35, 0.30]
+TARGET_SLIP_COUNT = 20
 
-# Strategy seeds (different seeds = different picks)
 STRATEGY_SEEDS = {
     'top_mixed': 100,
     'home_best': 200,
@@ -56,13 +53,24 @@ def load_accuracy_log():
 
 
 # ==============================================================================
-# WEEK WINDOW
+# DYNAMIC WEEK WINDOW (anchored to earliest upcoming match)
 # ==============================================================================
 
 def get_week_window(df, window_days=WEEK_WINDOW_DAYS):
+    """
+    Return matches within `window_days` starting from the EARLIEST upcoming match.
+    If no future matches exist, returns empty DataFrame.
+    """
     today = pd.Timestamp.now().normalize()
-    end = today + pd.Timedelta(days=window_days)
-    return df[(df['Date'] >= today) & (df['Date'] < end)].copy()
+    future = df[df['Date'] >= today].copy()
+
+    if future.empty:
+        return pd.DataFrame(), None, None
+
+    anchor_date = future['Date'].min()
+    end = anchor_date + pd.Timedelta(days=window_days)
+    window = future[(future['Date'] >= anchor_date) & (future['Date'] < end)].copy()
+    return window, anchor_date, end
 
 
 # ==============================================================================
@@ -176,7 +184,7 @@ def score_picks(df, weights):
 
 
 # ==============================================================================
-# LEAGUE DIVERSITY RULE
+# DIVERSITY
 # ==============================================================================
 
 def max_per_league_for_size(size):
@@ -192,12 +200,7 @@ def max_per_league_for_size(size):
 # SLIP CONSTRUCTION
 # ==============================================================================
 
-def build_slips_for_strategy(week_df, market, strategy, sizes):
-    """
-    Build slips using only the week window.
-    Applies MIN_PICK_CONFIDENCE filter to exclude weak picks.
-    Jitter shuffle ensures different strategies pick different games.
-    """
+def build_slips_for_strategy(week_df, market, strategy, sizes, min_confidence):
     if week_df.empty:
         return []
 
@@ -211,13 +214,8 @@ def build_slips_for_strategy(week_df, market, strategy, sizes):
         pred_col = 'dc_prediction'
 
     filtered = week_df.copy()
+    filtered = filtered[filtered[prob_col] >= min_confidence]
 
-    # ---- CONFIDENCE FLOOR ----
-    # Skip any pick below MIN_PICK_CONFIDENCE threshold.
-    # The 0.4-0.5 bucket historically underperforms, so we exclude it.
-    filtered = filtered[filtered[prob_col] >= MIN_PICK_CONFIDENCE]
-
-    # ---- STRATEGY FILTER ----
     if strategy == 'home_best':
         filtered = filtered[filtered['prediction'] == 'H']
     elif strategy == 'away_best':
@@ -226,14 +224,12 @@ def build_slips_for_strategy(week_df, market, strategy, sizes):
     if filtered.empty:
         return []
 
-    # ---- JITTER SHUFFLE ----
     seed = STRATEGY_SEEDS.get(strategy, 42)
     rng = np.random.default_rng(seed)
     filtered['jittered_score'] = filtered[score_col] + rng.normal(0, 0.01, len(filtered))
     filtered = filtered.sort_values('jittered_score', ascending=False)
 
     slips = []
-
     for size in sizes:
         max_per_league = max_per_league_for_size(size)
         picked = []
@@ -266,7 +262,6 @@ def build_slips_for_strategy(week_df, market, strategy, sizes):
             continue
 
         combined = float(np.prod([p['probability'] for p in picked]))
-
         slips.append({
             'market': market,
             'strategy': strategy,
@@ -279,13 +274,44 @@ def build_slips_for_strategy(week_df, market, strategy, sizes):
     return slips
 
 
+def build_all_slips_with_adaptive_confidence(week_df):
+    sizes = [3, 4, 5, 6, 7]
+    best_slips = []
+    best_tier = None
+
+    for tier in CONFIDENCE_TIERS:
+        print(f"\n[Trying] MIN_PICK_CONFIDENCE = {tier}")
+        all_slips = []
+        all_slips += build_slips_for_strategy(week_df, '1x2', 'top_mixed', sizes, tier)
+        all_slips += build_slips_for_strategy(week_df, '1x2', 'home_best', sizes, tier)
+        all_slips += build_slips_for_strategy(week_df, '1x2', 'away_best', sizes, tier)
+        all_slips += build_slips_for_strategy(week_df, 'dc', 'dc_best', sizes, tier)
+
+        print(f"  Generated {len(all_slips)} slips")
+
+        if len(all_slips) >= TARGET_SLIP_COUNT:
+            print(f"  [OK] Target reached. Using tier {tier}")
+            return all_slips, tier
+
+        if len(all_slips) > len(best_slips):
+            best_slips = all_slips
+            best_tier = tier
+
+    if best_slips:
+        print(f"\n[!] Could not reach {TARGET_SLIP_COUNT} slips.")
+        print(f"    Using best available: {len(best_slips)} slips at tier {best_tier}")
+        return best_slips, best_tier
+
+    return [], None
+
+
 # ==============================================================================
 # MAIN
 # ==============================================================================
 
 def main():
     print("=" * 70)
-    print("PREDICTD - BET SLIP BUILDER v4 (CONFIDENCE-FLOORED)")
+    print("PREDICTD - BET SLIP BUILDER v6 (DYNAMIC WEEK WINDOW)")
     print("=" * 70)
 
     preds = load_latest_predictions()
@@ -294,7 +320,6 @@ def main():
         return
 
     print(f"[OK] Loaded {len(preds)} predictions")
-    print(f"[CFG] MIN_PICK_CONFIDENCE = {MIN_PICK_CONFIDENCE}")
 
     acc_log = load_accuracy_log()
     print(f"[OK] Loaded {len(acc_log)} historical results for learning")
@@ -308,70 +333,79 @@ def main():
     print(f"  Leagues:   {clean(weights['league']) if weights['league'] else '(neutral)'}")
     print(f"  1X2 types: {clean(weights['type_1x2']) if weights['type_1x2'] else '(neutral)'}")
     print(f"  DC types:  {clean(weights['type_dc']) if weights['type_dc'] else '(neutral)'}")
-    print(f"  Confidence buckets: {clean(weights['confidence']) if weights['confidence'] else '(neutral)'}")
 
     df = score_picks(preds, weights)
     print(f"\n[OK] Scored {len(df)} picks")
 
-    # Apply week window
-    today = pd.Timestamp.now().normalize()
-    week_df = get_week_window(df, WEEK_WINDOW_DAYS)
-    week_end = today + pd.Timedelta(days=WEEK_WINDOW_DAYS - 1)
+    # DYNAMIC WINDOW — anchored to earliest upcoming match
+    week_df, anchor, end = get_week_window(df, WEEK_WINDOW_DAYS)
 
-    print(f"\n[WEEK WINDOW] {today.date()} to {week_end.date()} ({WEEK_WINDOW_DAYS} days)")
-    print(f"[OK] {len(week_df)} matches in window:")
-
-    # Show confidence filter impact per league
-    for league in sorted(week_df['League'].unique()):
-        league_df = week_df[week_df['League'] == league]
-        total = len(league_df)
-        filtered_1x2 = len(league_df[league_df['confidence_1x2'] >= MIN_PICK_CONFIDENCE])
-        filtered_dc = len(league_df[league_df['dc_confidence'] >= MIN_PICK_CONFIDENCE])
-        print(f"  {league:20}: {total} matches "
-              f"(1X2: {filtered_1x2} pass, DC: {filtered_dc} pass)")
-
-    if week_df.empty:
-        print("[!] No matches in week window.")
+    if anchor is None:
+        print("\n[!] No future matches in predictions file at all.")
+        print("    Saving empty placeholder. Run predict_live.py to refresh odds.")
+        os.makedirs(PREDICTIONS_DIR, exist_ok=True)
+        placeholder = pd.DataFrame(columns=[
+            'slip_id', 'strategy', 'market', 'size', 'combined_prob',
+            'pick_num', 'Date', 'League', 'HomeTeam', 'AwayTeam',
+            'prediction', 'probability', 'score'
+        ])
+        placeholder.to_csv(f"{PREDICTIONS_DIR}/bet_slips_{datetime.now().strftime('%Y%m%d')}.csv", index=False)
         return
 
-    # Total usable picks after filter
-    usable_1x2 = len(week_df[week_df['confidence_1x2'] >= MIN_PICK_CONFIDENCE])
-    usable_dc = len(week_df[week_df['dc_confidence'] >= MIN_PICK_CONFIDENCE])
-    print(f"\n[FILTER] {usable_1x2} 1X2 picks and {usable_dc} DC picks pass "
-          f"confidence >= {MIN_PICK_CONFIDENCE}")
+    print(f"\n[DYNAMIC WINDOW] Anchored to earliest match: {anchor.date()} to {end.date()}")
+    print(f"[OK] {len(week_df)} matches in window:")
 
-    # Generate slips
-    sizes = [3, 4, 5, 6, 7]
-    all_slips = []
-    all_slips += build_slips_for_strategy(week_df, '1x2', 'top_mixed', sizes)
-    all_slips += build_slips_for_strategy(week_df, '1x2', 'home_best', sizes)
-    all_slips += build_slips_for_strategy(week_df, '1x2', 'away_best', sizes)
-    all_slips += build_slips_for_strategy(week_df, 'dc', 'dc_best', sizes)
+    for league in sorted(week_df['League'].unique()):
+        count = len(week_df[week_df['League'] == league])
+        print(f"  {league:20}: {count} matches")
+
+    if week_df.empty:
+        print("\n[!] No matches in dynamic window. Saving placeholder.")
+        os.makedirs(PREDICTIONS_DIR, exist_ok=True)
+        placeholder = pd.DataFrame(columns=[
+            'slip_id', 'strategy', 'market', 'size', 'combined_prob',
+            'pick_num', 'Date', 'League', 'HomeTeam', 'AwayTeam',
+            'prediction', 'probability', 'score'
+        ])
+        placeholder.to_csv(f"{PREDICTIONS_DIR}/bet_slips_{datetime.now().strftime('%Y%m%d')}.csv", index=False)
+        return
+
+    print("\n" + "=" * 70)
+    print("ADAPTIVE CONFIDENCE SEARCH")
+    print("=" * 70)
+
+    all_slips, chosen_tier = build_all_slips_with_adaptive_confidence(week_df)
 
     if not all_slips:
-        print("\n[!] No slips could be built after confidence filter.")
-        print(f"     Try lowering MIN_PICK_CONFIDENCE below {MIN_PICK_CONFIDENCE}")
+        print("\n[!] FATAL: No slips could be built at any threshold.")
+        print("    Saving placeholder.")
+        os.makedirs(PREDICTIONS_DIR, exist_ok=True)
+        placeholder = pd.DataFrame(columns=[
+            'slip_id', 'strategy', 'market', 'size', 'combined_prob',
+            'pick_num', 'Date', 'League', 'HomeTeam', 'AwayTeam',
+            'prediction', 'probability', 'score'
+        ])
+        placeholder.to_csv(f"{PREDICTIONS_DIR}/bet_slips_{datetime.now().strftime('%Y%m%d')}.csv", index=False)
         return
 
     for i, s in enumerate(all_slips, 1):
         s['slip_id'] = i
 
     print("\n" + "=" * 70)
-    print(f"GENERATED {len(all_slips)} BET SLIPS (all resolve by {week_end.date()})")
+    print(f"GENERATED {len(all_slips)} SLIPS (confidence tier = {chosen_tier})")
+    print(f"All matches between {anchor.date()} and {end.date()}")
     print("=" * 70)
 
     for slip in all_slips:
         print(f"\n--- SLIP #{slip['slip_id']} [{slip['strategy']}] "
               f"({slip['market'].upper()}, {slip['size']}-fold) ---")
-        print(f"Combined probability: {slip['combined_prob']*100:.2f}% | "
-              f"Odds: {1/slip['combined_prob']:.2f}x")
+        print(f"Combined: {slip['combined_prob']*100:.2f}% | Odds: {1/slip['combined_prob']:.2f}x")
         print(f"Leagues: {', '.join(slip['leagues'])}")
         for pick in slip['picks']:
             print(f"  {pick['Date'].strftime('%a %m-%d')} | {pick['League']:16} | "
                   f"{pick['HomeTeam']:22} vs {pick['AwayTeam']:22} | "
-                  f"{pick['prediction']} | {pick['probability']*100:.1f}% | score: {pick['score']:.3f}")
+                  f"{pick['prediction']} | {pick['probability']*100:.1f}%")
 
-    # Save flat CSV
     rows = []
     for slip in all_slips:
         for i, pick in enumerate(slip['picks'], 1):
@@ -397,18 +431,13 @@ def main():
     out_df.to_csv(output_file, index=False)
 
     print(f"\n[OK] Saved {len(all_slips)} slips to: {output_file}")
+    print(f"[OK] Confidence tier used: {chosen_tier}")
+    print(f"[OK] Match window: {anchor.date()} to {end.date()}")
+
     print("\nBreakdown by strategy:")
     for strat in ['top_mixed', 'home_best', 'away_best', 'dc_best']:
         count = sum(1 for s in all_slips if s['strategy'] == strat)
         print(f"  {strat:12}: {count} slips")
-
-    print("\nLeague coverage per strategy (unique leagues used):")
-    for strat in ['top_mixed', 'home_best', 'away_best', 'dc_best']:
-        strat_slips = [s for s in all_slips if s['strategy'] == strat]
-        all_leagues = set()
-        for s in strat_slips:
-            all_leagues.update(s['leagues'])
-        print(f"  {strat:12}: {sorted(all_leagues)}")
 
 
 if __name__ == "__main__":

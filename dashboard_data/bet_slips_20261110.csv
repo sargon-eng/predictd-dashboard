@@ -1,0 +1,101 @@
+slip_id,strategy,market,size,combined_prob,pick_num,Date,League,HomeTeam,AwayTeam,prediction,probability,score
+1,top_mixed,1x2,3,0.5576,1,2026-11-20,Bundesliga,Bayern Munich,FC Koln,H,0.8811,1.3162
+1,top_mixed,1x2,3,0.5576,2,2026-11-21,Serie A,Como,Cagliari,H,0.7287,1.2757
+1,top_mixed,1x2,3,0.5576,3,2026-11-25,Champions League,Ath Madrid,Viking FK,H,0.8685,1.2163
+2,top_mixed,1x2,4,0.3934,1,2026-11-20,Bundesliga,Bayern Munich,FC Koln,H,0.8811,1.3162
+2,top_mixed,1x2,4,0.3934,2,2026-11-21,Serie A,Como,Cagliari,H,0.7287,1.2757
+2,top_mixed,1x2,4,0.3934,3,2026-11-22,Serie A,Juventus,Venezia,H,0.7056,1.2352
+2,top_mixed,1x2,4,0.3934,4,2026-11-25,Champions League,Ath Madrid,Viking FK,H,0.8685,1.2163
+3,top_mixed,1x2,5,0.3168,1,2026-11-20,Bundesliga,Bayern Munich,FC Koln,H,0.8811,1.3162
+3,top_mixed,1x2,5,0.3168,2,2026-11-21,Serie A,Como,Cagliari,H,0.7287,1.2757
+3,top_mixed,1x2,5,0.3168,3,2026-11-22,Serie A,Juventus,Venezia,H,0.7056,1.2352
+3,top_mixed,1x2,5,0.3168,4,2026-11-25,Champions League,Ath Madrid,Viking FK,H,0.8685,1.2163
+3,top_mixed,1x2,5,0.3168,5,2026-11-26,Europa League,Salzburg,FC Ararat-Armenia,H,0.8052,1.1277
+4,top_mixed,1x2,6,0.2221,1,2026-11-20,Bundesliga,Bayern Munich,FC Koln,H,0.8811,1.3162
+4,top_mixed,1x2,6,0.2221,2,2026-11-21,Serie A,Como,Cagliari,H,0.7287,1.2757
+4,top_mixed,1x2,6,0.2221,3,2026-11-22,Serie A,Juventus,Venezia,H,0.7056,1.2352
+4,top_mixed,1x2,6,0.2221,4,2026-11-21,Serie A,Lazio,Lecce,H,0.7012,1.2275
+4,top_mixed,1x2,6,0.2221,5,2026-11-25,Champions League,Ath Madrid,Viking FK,H,0.8685,1.2163
+4,top_mixed,1x2,6,0.2221,6,2026-11-26,Europa League,Salzburg,FC Ararat-Armenia,H,0.8052,1.1277
+5,top_mixed,1x2,7,0.1681,1,2026-11-20,Bundesliga,Bayern Munich,FC Koln,H,0.8811,1.3162
+5,top_mixed,1x2,7,0.1681,2,2026-11-21,Serie A,Como,Cagliari,H,0.7287,1.2757
+5,top_mixed,1x2,7,0.1681,3,2026-11-22,Serie A,Juventus,Venezia,H,0.7056,1.2352
+5,top_mixed,1x2,7,0.1681,4,2026-11-21,Serie A,Lazio,Lecce,H,0.7012,1.2275
+5,top_mixed,1x2,7,0.1681,5,2026-11-25,Champions League,Ath Madrid,Viking FK,H,0.8685,1.2163
+5,top_mixed,1x2,7,0.1681,6,2026-11-26,Europa League,Salzburg,FC Ararat-Armenia,H,0.8052,1.1277
+5,top_mixed,1x2,7,0.1681,7,2026-11-21,Bundesliga,Leverkusen,Paderborn,H,0.7567,1.1305
+6,home_best,1x2,3,0.5576,1,2026-11-20,Bundesliga,Bayern Munich,FC Koln,H,0.8811,1.3162
+6,home_best,1x2,3,0.5576,2,2026-11-21,Serie A,Como,Cagliari,H,0.7287,1.2757
+6,home_best,1x2,3,0.5576,3,2026-11-25,Champions League,Ath Madrid,Viking FK,H,0.8685,1.2163
+7,home_best,1x2,4,0.3934,1,2026-11-20,Bundesliga,Bayern Munich,FC Koln,H,0.8811,1.3162
+7,home_best,1x2,4,0.3934,2,2026-11-21,Serie A,Como,Cagliari,H,0.7287,1.2757
+7,home_best,1x2,4,0.3934,3,2026-11-22,Serie A,Juventus,Venezia,H,0.7056,1.2352
+7,home_best,1x2,4,0.3934,4,2026-11-25,Champions League,Ath Madrid,Viking FK,H,0.8685,1.2163
+8,home_best,1x2,5,0.3149,1,2026-11-20,Bundesliga,Bayern Munich,FC Koln,H,0.8811,1.3162
+8,home_best,1x2,5,0.3149,2,2026-11-21,Serie A,Como,Cagliari,H,0.7287,1.2757
+8,home_best,1x2,5,0.3149,3,2026-11-22,Serie A,Juventus,Venezia,H,0.7056,1.2352
+8,home_best,1x2,5,0.3149,4,2026-11-25,Champions League,Ath Madrid,Viking FK,H,0.8685,1.2163
+8,home_best,1x2,5,0.3149,5,2026-11-24,Champions League,Real Madrid,PSV Eindhoven,H,0.8003,1.1208
+9,home_best,1x2,6,0.2208,1,2026-11-20,Bundesliga,Bayern Munich,FC Koln,H,0.8811,1.3162
+9,home_best,1x2,6,0.2208,2,2026-11-21,Serie A,Como,Cagliari,H,0.7287,1.2757
+9,home_best,1x2,6,0.2208,3,2026-11-22,Serie A,Juventus,Venezia,H,0.7056,1.2352
+9,home_best,1x2,6,0.2208,4,2026-11-25,Champions League,Ath Madrid,Viking FK,H,0.8685,1.2163
+9,home_best,1x2,6,0.2208,5,2026-11-21,Serie A,Lazio,Lecce,H,0.7012,1.2275
+9,home_best,1x2,6,0.2208,6,2026-11-24,Champions League,Real Madrid,PSV Eindhoven,H,0.8003,1.1208
+10,home_best,1x2,7,0.1671,1,2026-11-20,Bundesliga,Bayern Munich,FC Koln,H,0.8811,1.3162
+10,home_best,1x2,7,0.1671,2,2026-11-21,Serie A,Como,Cagliari,H,0.7287,1.2757
+10,home_best,1x2,7,0.1671,3,2026-11-22,Serie A,Juventus,Venezia,H,0.7056,1.2352
+10,home_best,1x2,7,0.1671,4,2026-11-25,Champions League,Ath Madrid,Viking FK,H,0.8685,1.2163
+10,home_best,1x2,7,0.1671,5,2026-11-21,Serie A,Lazio,Lecce,H,0.7012,1.2275
+10,home_best,1x2,7,0.1671,6,2026-11-24,Champions League,Real Madrid,PSV Eindhoven,H,0.8003,1.1208
+10,home_best,1x2,7,0.1671,7,2026-11-21,Bundesliga,Leverkusen,Paderborn,H,0.7567,1.1305
+11,away_best,1x2,3,0.4126,1,2026-11-21,Serie A,Parma,Roma,A,0.7225,1.0212
+11,away_best,1x2,3,0.4126,2,2026-11-25,Champions League,Sabah FK,Barcelona,A,0.8694,0.9831
+11,away_best,1x2,3,0.4126,3,2026-11-21,Ligue 1,Nice,Paris SG,A,0.6569,0.8239
+12,away_best,1x2,4,0.3063,1,2026-11-21,Serie A,Parma,Roma,A,0.7225,1.0212
+12,away_best,1x2,4,0.3063,2,2026-11-25,Champions League,Sabah FK,Barcelona,A,0.8694,0.9831
+12,away_best,1x2,4,0.3063,3,2026-11-24,Champions League,SK Slovan Bratislava,Betis,A,0.7423,0.8394
+12,away_best,1x2,4,0.3063,4,2026-11-21,Ligue 1,Nice,Paris SG,A,0.6569,0.8239
+13,away_best,1x2,5,0.1951,1,2026-11-21,Serie A,Parma,Roma,A,0.7225,1.0212
+13,away_best,1x2,5,0.1951,2,2026-11-25,Champions League,Sabah FK,Barcelona,A,0.8694,0.9831
+13,away_best,1x2,5,0.1951,3,2026-11-24,Champions League,SK Slovan Bratislava,Betis,A,0.7423,0.8394
+13,away_best,1x2,5,0.1951,4,2026-11-21,Ligue 1,Nice,Paris SG,A,0.6569,0.8239
+13,away_best,1x2,5,0.1951,5,2026-11-26,Europa League,Viktoria Plzen,Benfica,A,0.6369,0.7202
+14,away_best,1x2,6,0.1382,1,2026-11-21,Serie A,Parma,Roma,A,0.7225,1.0212
+14,away_best,1x2,6,0.1382,2,2026-11-25,Champions League,Sabah FK,Barcelona,A,0.8694,0.9831
+14,away_best,1x2,6,0.1382,3,2026-11-24,Champions League,SK Slovan Bratislava,Betis,A,0.7423,0.8394
+14,away_best,1x2,6,0.1382,4,2026-11-21,Ligue 1,Nice,Paris SG,A,0.6569,0.8239
+14,away_best,1x2,6,0.1382,5,2026-11-25,Champions League,Lille,Bayern Munich,A,0.7083,0.8009
+14,away_best,1x2,6,0.1382,6,2026-11-26,Europa League,Viktoria Plzen,Benfica,A,0.6369,0.7202
+15,away_best,1x2,7,0.0839,1,2026-11-21,Serie A,Parma,Roma,A,0.7225,1.0212
+15,away_best,1x2,7,0.0839,2,2026-11-25,Champions League,Sabah FK,Barcelona,A,0.8694,0.9831
+15,away_best,1x2,7,0.0839,3,2026-11-24,Champions League,SK Slovan Bratislava,Betis,A,0.7423,0.8394
+15,away_best,1x2,7,0.0839,4,2026-11-21,Ligue 1,Nice,Paris SG,A,0.6569,0.8239
+15,away_best,1x2,7,0.0839,5,2026-11-25,Champions League,Lille,Bayern Munich,A,0.7083,0.8009
+15,away_best,1x2,7,0.0839,6,2026-11-26,Europa League,Viktoria Plzen,Benfica,A,0.6369,0.7202
+15,away_best,1x2,7,0.0839,7,2026-11-21,Bundesliga,Union Berlin,RB Leipzig,A,0.607,0.7321
+16,dc_best,dc,3,0.7564,1,2026-11-21,Serie A,Parma,Roma,X2,0.8941,1.8887
+16,dc_best,dc,3,0.7564,2,2026-11-20,Bundesliga,Bayern Munich,FC Koln,1X,0.9515,1.7153
+16,dc_best,dc,3,0.7564,3,2026-11-22,Ligue 1,Paris FC,Angers,1X,0.8891,1.6665
+17,dc_best,dc,4,0.6781,1,2026-11-21,Serie A,Parma,Roma,X2,0.8941,1.8887
+17,dc_best,dc,4,0.6781,2,2026-11-21,Serie A,Como,Cagliari,1X,0.8966,1.894
+17,dc_best,dc,4,0.6781,3,2026-11-20,Bundesliga,Bayern Munich,FC Koln,1X,0.9515,1.7153
+17,dc_best,dc,4,0.6781,4,2026-11-22,Ligue 1,Paris FC,Angers,1X,0.8891,1.6665
+18,dc_best,dc,5,0.5886,1,2026-11-21,Serie A,Parma,Roma,X2,0.8941,1.8887
+18,dc_best,dc,5,0.5886,2,2026-11-21,Serie A,Como,Cagliari,1X,0.8966,1.894
+18,dc_best,dc,5,0.5886,3,2026-11-20,Bundesliga,Bayern Munich,FC Koln,1X,0.9515,1.7153
+18,dc_best,dc,5,0.5886,4,2026-11-22,Ligue 1,Paris FC,Angers,1X,0.8891,1.6665
+18,dc_best,dc,5,0.5886,5,2026-11-21,Ligue 1,Monaco,Auxerre,1X,0.868,1.627
+19,dc_best,dc,6,0.5198,1,2026-11-21,Serie A,Parma,Roma,X2,0.8941,1.8887
+19,dc_best,dc,6,0.5198,2,2026-11-21,Serie A,Como,Cagliari,1X,0.8966,1.894
+19,dc_best,dc,6,0.5198,3,2026-11-22,Serie A,Juventus,Venezia,1X,0.883,1.8653
+19,dc_best,dc,6,0.5198,4,2026-11-20,Bundesliga,Bayern Munich,FC Koln,1X,0.9515,1.7153
+19,dc_best,dc,6,0.5198,5,2026-11-22,Ligue 1,Paris FC,Angers,1X,0.8891,1.6665
+19,dc_best,dc,6,0.5198,6,2026-11-21,Ligue 1,Monaco,Auxerre,1X,0.868,1.627
+20,dc_best,dc,7,0.4969,1,2026-11-21,Serie A,Parma,Roma,X2,0.8941,1.8887
+20,dc_best,dc,7,0.4969,2,2026-11-21,Serie A,Como,Cagliari,1X,0.8966,1.894
+20,dc_best,dc,7,0.4969,3,2026-11-22,Serie A,Juventus,Venezia,1X,0.883,1.8653
+20,dc_best,dc,7,0.4969,4,2026-11-20,Bundesliga,Bayern Munich,FC Koln,1X,0.9515,1.7153
+20,dc_best,dc,7,0.4969,5,2026-11-22,Ligue 1,Paris FC,Angers,1X,0.8891,1.6665
+20,dc_best,dc,7,0.4969,6,2026-11-21,Ligue 1,Monaco,Auxerre,1X,0.868,1.627
+20,dc_best,dc,7,0.4969,7,2026-11-25,Champions League,Ath Madrid,Viking FK,1X,0.956,1.6157
