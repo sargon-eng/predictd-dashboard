@@ -1,0 +1,11 @@
+slip_id,strategy,market,size,combined_prob,pick_num,Date,League,HomeTeam,AwayTeam,prediction,probability,score
+1,dc_best,dc,4,0.3199,1,2026-11-08,Serie A,Inter,Como,12,0.767,1.0569
+1,dc_best,dc,4,0.3199,2,2026-11-08,Serie A,Monza,Atalanta,12,0.7537,1.0385
+1,dc_best,dc,4,0.3199,3,2026-11-08,Ligue 1,Angers,Nice,X2,0.7359,0.8161
+1,dc_best,dc,4,0.3199,4,2026-11-08,Ligue 1,Lens,Marseille,12,0.7519,0.8338
+2,dc_best,dc,6,0.1723,1,2026-11-08,Serie A,Inter,Como,12,0.767,1.0569
+2,dc_best,dc,6,0.1723,2,2026-11-08,Serie A,Monza,Atalanta,12,0.7537,1.0385
+2,dc_best,dc,6,0.1723,3,2026-11-08,Serie A,Napoli,Lazio,12,0.7373,1.0159
+2,dc_best,dc,6,0.1723,4,2026-11-08,Ligue 1,Angers,Nice,X2,0.7359,0.8161
+2,dc_best,dc,6,0.1723,5,2026-11-08,Ligue 1,Lens,Marseille,12,0.7519,0.8338
+2,dc_best,dc,6,0.1723,6,2026-11-08,Ligue 1,Rennes,Lille,12,0.7306,0.8102

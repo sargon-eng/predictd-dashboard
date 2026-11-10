@@ -1,55 +1,55 @@
 {
-  "timestamp": "2026-11-06 10:09:14",
+  "timestamp": "2026-11-10 15:13:34",
   "overall_status": "excellent",
   "primary_window": "last_10",
-  "trend": "worsening",
+  "trend": "improving",
   "windows": {
     "last_10": {
       "matches": 10,
-      "correct": 6,
-      "accuracy": 0.6
+      "correct": 7,
+      "accuracy": 0.7
     },
     "last_30": {
       "matches": 30,
-      "correct": 16,
-      "accuracy": 0.5333333333333333
+      "correct": 19,
+      "accuracy": 0.6333333333333333
     },
     "last_100": {
       "matches": 100,
-      "correct": 59,
-      "accuracy": 0.59
+      "correct": 62,
+      "accuracy": 0.62
     },
     "all_time": {
-      "matches": 163,
-      "correct": 95,
-      "accuracy": 0.5828220858895705
+      "matches": 269,
+      "correct": 161,
+      "accuracy": 0.5985130111524164
     }
   },
   "leagues": {
     "Premier League": {
-      "matches": 50,
-      "correct": 25,
+      "matches": 70,
+      "correct": 35,
       "accuracy": 0.5
     },
     "Bundesliga": {
-      "matches": 27,
-      "correct": 16,
-      "accuracy": 0.5926
+      "matches": 45,
+      "correct": 28,
+      "accuracy": 0.6222
     },
     "La Liga": {
-      "matches": 30,
-      "correct": 17,
-      "accuracy": 0.5667
+      "matches": 50,
+      "correct": 29,
+      "accuracy": 0.58
     },
     "Ligue 1": {
-      "matches": 26,
-      "correct": 16,
-      "accuracy": 0.6154
+      "matches": 44,
+      "correct": 28,
+      "accuracy": 0.6364
     },
     "Serie A": {
-      "matches": 30,
-      "correct": 21,
-      "accuracy": 0.7
+      "matches": 60,
+      "correct": 41,
+      "accuracy": 0.6833
     }
   },
   "calibration_issues": [],
@@ -60,9 +60,9 @@
       "action": "No action needed"
     },
     {
-      "level": "WARNING",
-      "message": "Accuracy is trending downward over the last 30 matches",
-      "action": "Look for systematic issues (league, time of day)"
+      "level": "INFO",
+      "message": "Accuracy is trending upward",
+      "action": "No action needed"
     }
   ]
 }
